@@ -23,13 +23,16 @@ from datetime import datetime
 main = Blueprint("main", __name__)
 admin = Blueprint("admin", __name__, url_prefix="/admin/")
 
-
+# def home()
+# 기본 경로, '/' 의 경로 요청 시 실행되는 함수
+# 가장처음 뜨는 화면으로 index.html 화면, 즉 정보 입력 페이지를 표시.
 @main.route("/", methods=["GET"])
 def home():
     # 참여자 정보 입력 페이지를 렌더링합니다.
     return render_template("index.html")
 
-
+# def add_participant()
+# 사용자가 입력한 데이터를 들고 와서 새로운 객체인 new_participant를 생성
 @main.route("/participants", methods=["POST"])
 def add_participant():
     data = request.get_json()
@@ -44,7 +47,10 @@ def add_participant():
         {"redirect": url_for("main.quiz"), "participant_id": new_participant.id}
     )
 
-
+# def quiz()
+# /quiz 경로에 대한 함수, 전송받은 ID쿠키를 사용한다.
+# id가 있을 경우 quiz.html로 전송되며 질문이 담긴 페이지를 보여준다.
+# id가 없을 경우 main.home으로 전송된다.
 @main.route("/quiz")
 def quiz():
     # 퀴즈 페이지를 렌더링합니다. 참여자 ID 쿠키가 필요합니다.
@@ -57,7 +63,10 @@ def quiz():
     questions_list = [question.content for question in questions]
     return render_template("quiz.html", questions=questions_list)
 
-
+# def submit()
+# 퀴즈를 다 푼 다음 응답을 제출 할 때 사용하는 코드로 데이터베이스에 저장한다.
+# id가 없을 경우 400에러가 뜬다 (아이디를 찾을 수 없습니다.)
+# 새 인스턴스를 추가하여 데이터베이스에 추가 후 변경 사항에 대해 올린다.
 @main.route("/submit", methods=["POST"])
 def submit():
     # 참여자 ID가 필요합니다.
@@ -90,7 +99,8 @@ def submit():
         }
     )
 
-
+# def get_questions()
+# is_active가 True인 질문만 가져와서 json 형식으로 변경
 @main.route("/questions")
 def get_questions():
     # is_active가 True인 질문만 선택하고, order_num에 따라 정렬
@@ -109,7 +119,9 @@ def get_questions():
     ]
     return jsonify(questions=questions_list)
 
-
+# def show_results()
+# 데이터베이스에서 데이터를 조회, 엑셀과 같은 테이블 형식으로 변환한다.
+# 후 result.html 페이지를 통해 결과페이지를 보여준다.
 @main.route("/results")
 def show_results():
     # 데이터베이스에서 데이터 조회
@@ -243,7 +255,10 @@ def show_results():
     # 데이터를 results.html에 전달
     return render_template("results.html", graphs_json=graphs_json)
 
-
+# def login()
+# 관리자 로그인을 할 수 있는 함수이다.
+# 사용자가 입력한 아이디와 비밀번호로 관리자 권한을 확인한다.
+# 관리자 권한이 있는경우 어드민 페이지를 표시, 로그인 실패시 알림과 함께 로그인 화면으로 다시 표시한다.
 @admin.route("", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -260,7 +275,8 @@ def login():
 
     return render_template("admin.html")
 
-
+# def logout()
+# 어드민 로그인했던 걸 로그아웃하는 코드
 @admin.route("/logout")
 def logout():
     session.pop("admin_logged_in", None)
@@ -280,7 +296,8 @@ def login_required(f):
 
     return decorated_function
 
-
+# def dashboard()
+# 어드민 사이트 대시보드, 날짜별 참가자 수 계산 등 Plotly로 표로 변환해서 표시한다.
 @admin.route("dashboard")
 @login_required
 def dashboard():
@@ -309,7 +326,9 @@ def dashboard():
     # 생성된 HTML을 템플릿으로 전달
     return render_template("dashboard.html", graph_div=graph_div)
 
-
+# def manage_questions()
+# 관리자 대시보드 내 질문게시판
+# 질문을 추가하거나 수정할 수 있도록 코드가 짜여있다.
 @admin.route("/dashboard/question", methods=["GET", "POST"])
 @login_required
 def manage_questions():
@@ -342,7 +361,9 @@ def manage_questions():
     questions = Question.query.order_by(Question.order_num).all()
     return render_template("manage_questions.html", questions=questions)
 
-
+# def quiz_list()
+# 대시보드에 질문 리스트를 표시한다.
+# 
 @admin.route("/dashboard/list")
 @login_required
 def quiz_list():
